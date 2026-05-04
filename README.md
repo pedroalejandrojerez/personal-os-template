@@ -157,6 +157,19 @@ These fire during work, not after:
 2. **"I just explained something that took >2 minutes"** → log to relevant spoke
 3. **"This problem feels familiar"** → check skills first, create pattern if second occurrence
 
+### Patterns Baked Into CLAUDE.md
+
+The personal `CLAUDE.md` ships with a few opinionated behaviors. Customize or delete what doesn't fit.
+
+| Pattern | What it does |
+|---------|--------------|
+| **How You Talk To Me** | Communication style preferences (reading level, tone, format) — set once, your AI matches it forever |
+| **The Ship Test** | Before starting anything new, ask: "Is there something already built that could ship instead?" Forces WIP discipline |
+| **Verify Before Declaring Done** | Don't trust "looks correct" — query the database, hit the endpoint, screenshot the rendered output |
+| **Friction Capture** | 5 trigger phrases ("log it", "that was dumb", etc.) capture frustrations live to `memory/pending-improvements.md`. Weekly review converts them into hooks, feedback memories, or CLAUDE.md edits — no journaling allowed |
+| **Coding Guidelines** | 4 rules: think before coding, simplicity first, surgical changes, goal-driven execution. Reduces common LLM mistakes |
+| **Tool Routing** | A signal-to-tool table. Your AI auto-routes work types to the right command (planning, review, QA, etc.) without you having to ask |
+
 ## Solo Use (No Team)
 
 If you're working solo, just use the `personal-os/` folder. Delete the `~/{team-repo}/` references from CLAUDE.md, and remove the team-related steps from the session protocols. Everything else works identically.

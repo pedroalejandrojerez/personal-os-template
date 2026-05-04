@@ -14,35 +14,55 @@ You are working inside {YOUR_NAME}'s personal workspace. This is a private scrat
 
 ---
 
-## Session Start Protocol
-1. Read `handoff.md` — quick scan, what happened last session (under 20 lines)
-2. If deeper context needed → read `active-backlog.md`
-3. Read `~/{team-repo}/learnings/` — check for new team learnings (files modified in last 3 days)
-4. Read `~/{team-repo}/skills-library/README.md` — check for new team skills
-5. **WIP check**: Before starting new work, check active-backlog.md — surface the top unfinished item:
-   > "Before we start something new — [X] has been at ~80% for [N] days. It needs [specific task]. Want to close it out first?"
-6. Present top actions and ask what to work on
+## How You Talk To Me
 
-**WIP Limit:** Max 3 items "in progress" at a time. To start a 4th, finish or kill one first.
+Customize this section with your own communication preferences. Examples below — replace, edit, or delete.
 
-## Session Planning Gate — Before ANY Build Work
-Before starting any coding or building task, run this checklist:
+- **Reading level:** Write at a {fifth-grade / plain-language / technical} reading level. {Short sentences. Common words. Define jargon the first time it appears.}
+- **Tone:** Be direct. Don't soften answers. If something's wrong, say so.
+- **Format:** Use tables and bullets when comparing options. Avoid walls of text.
+- **Recommendations:** Lead with a recommendation. Don't present equal-weight options. Say which and why, then share alternatives.
 
-> **Session Planning Gate**
-> 1. What's the ONE outcome for this session? (Write it in past tense: "We ___")
-> 2. What does "done" look like? (Specific, verifiable)
-> 3. How long should this take? (If we exceed 2x, stop and reassess)
-> 4. What are we NOT doing? (Name at least one adjacent thing we'll ignore)
-> 5. Is there anything in-flight that should finish first? (Check active-backlog.md)
-
-After answers, restate the session scope in one sentence and pin it. Reference it if scope drifts.
-Skip conditions: Session is explicitly a brainstorm, exploration, or brief generation.
+This rule applies to **chat responses**, not to artifacts written for other agents or production code. A spec written for a builder agent can be technical; the explanation back to me is plain-language.
 
 ---
 
-## Compounding Learning Protocol — Never Solve the Same Problem Twice
+## Session Start
+1. Read `handoff.md` — what happened last session (under 20 lines)
+2. Check `active-backlog.md` — find the item closest to shipped
+3. Read `~/{team-repo}/learnings/` — new team learnings (files modified in last 3 days)
+4. Read `~/{team-repo}/skills-library/README.md` — check for new team skills
+5. Present: "**[X] is closest to done.** It needs [specific task]. Ship it, or work on something else?"
 
-### Three Capture Triggers (During Every Session — Not After)
+Default action is always: **close an open loop**.
+
+**WIP Limit:** Max 3 items "in progress" at a time. To start a 4th, finish or kill one first.
+
+---
+
+## The Ship Test — Before Starting Anything New
+
+> "Is there something already built that could ship instead?"
+
+If yes, ship it first. New work only starts when nothing is at 80%+.
+
+If you explicitly want to start something new, that's fine — but name what's being deprioritized.
+
+---
+
+## Session Close
+1. **Learning gate (the gate, not optional)** — Before writing the handoff, ask: "What did we learn today that would save >10 minutes next time? Any new skills to extract?"
+   - Reusable pattern → `memory/skills/{name}.md` (personal first; promote to `~/{team-repo}/skills-library/` once polished)
+   - Team-level learning → `~/{team-repo}/learnings/YYYY-MM-DD-{slug}.md`, then `cd ~/{team-repo} && git add learnings/ && git commit -m "learning: {title}" && git push`
+   - Decision with non-obvious reasoning → `memory/decisions/YYYY-MM-DD-{slug}.md`
+2. Update `handoff.md` (under 20 lines) — what was done + top 3 next actions
+3. Update `active-backlog.md` — mark completed, add new items, park anything stalled 3+ sessions
+
+---
+
+## Compounding Learning Protocol — Three Capture Triggers
+
+Capture **during** sessions, not after. By the end, the freshness is gone.
 
 **Trigger 1 — "We just built something reusable"**
 Any integration, automation, pipeline, or pattern that could apply elsewhere.
@@ -50,76 +70,18 @@ Any integration, automation, pipeline, or pattern that could apply elsewhere.
 
 **Trigger 2 — "I just explained something that took >2 minutes"**
 Any concept, framework, decision rationale, or technical explanation.
-→ Log immediately to the relevant memory spoke. Not at session end — right then.
+→ Log immediately to the relevant memory spoke. Right then, not later.
 
 **Trigger 3 — "This problem feels familiar"**
-If you recognize a problem type you've seen before:
+If you recognize a problem type:
 → Check `~/{team-repo}/skills-library/` and `memory/skills/` FIRST.
 → If a pattern exists, use it. If this is the second time and no pattern exists — create one now.
 
-### Before Building Anything
-1. Search `~/{team-repo}/skills-library/` for existing team patterns
-2. Search `memory/skills/` for personal patterns
-3. If a skill exists → use it. If close → adapt it. Only build from zero when nothing matches.
-4. If you skip an existing skill → explain why.
-
-### Session Close Learning Gate
-Before writing the handoff, always ask:
-> "What did we learn today that would save >10 minutes next time? Any new skills to extract?"
-
-This is a gate — the handoff doesn't get written until learning capture is done.
-
 **The Compound Test:** "If a brand new session started this exact same task tomorrow, would it be faster because of what we logged today?"
 
----
-
-## Session Close Protocol
-Before ending any session, run this in order:
-
-### 1. Learning Capture (the gate)
-- **Learnings check**: "Did we learn anything the team should know?"
-  - If yes → write to `~/{team-repo}/learnings/YYYY-MM-DD-{slug}.md`
-  - Then: `cd ~/{team-repo} && git add learnings/ && git commit -m "learning: {title}" && git push`
-- **Skill check**: "Did we solve something that would save >10 min next time?"
-  - If yes → write to `memory/skills/{name}.md` (personal first)
-  - When polished → promote to `~/{team-repo}/skills-library/` and push
-- **Decision check**: "Did we make a decision with non-obvious reasoning?"
-  - If yes → write to `memory/decisions/YYYY-MM-DD-{slug}.md`
-
-### 2. Handoff (two-file system)
-**Quick scan** — update `handoff.md` (under 20 lines):
-```
-# Session Handoff — {date}
-## What Was Done
-- [bullet points, one line each]
-
-## Top 3 Next Actions
-1. **[Action]** — [one line of context]
-2. **[Action]** — [one line of context]
-3. **[Action]** — [one line of context]
-
-## Full Backlog
-→ `active-backlog.md`
-```
-
-**Full backlog** — update `active-backlog.md`:
-- Add new items discovered this session
-- Remove items that were completed
-- Items sitting 3+ sessions without movement → mark as "parked" or remove
+If the answer is no, something should have been captured.
 
 ---
-
-## Routing Rules — Where to Save What
-
-| Type of information | Where it goes |
-|---|---|
-| Project-specific insight or data | `memory/{project}/{topic}.md` (spoke) |
-| Strategic decision with reasoning | `memory/decisions/YYYY-MM-DD-{slug}.md` |
-| Reusable pattern or template | `memory/skills/{name}.md` → promote to team repo |
-| Something the whole team should know | `~/{team-repo}/learnings/YYYY-MM-DD-{slug}.md` |
-| Session observation | `memory/journal/pattern-journal.md` |
-
-**Rule:** If it only matters to you → personal memory. If the team should know → team repo.
 
 ## Memory Architecture: Hub & Spoke
 
@@ -138,23 +100,146 @@ memory/MEMORY.md (master index — always loaded, <50 lines)
 - Hubs stay under 60 lines — use spokes for detail
 - Don't duplicate what's in the team repo — personal memory is for YOUR context
 
-## Verify Outcomes Before Declaring Done
-Never say "done" based on code looking correct — verify the actual output:
-- If it writes to a database → query and check the rows
-- If it generates messages → run it and read the actual messages
-- If it calls an API → check the API response, not just that the call didn't error
-- If it deploys → hit the endpoint and verify the behavior
+---
+
+## Verify Before Declaring Done
+
+Don't say "done" based on code looking correct. Verify the actual output:
+
+- **Database writes** → query and check the rows
+- **API calls** → check the response, not just that the call didn't error
+- **Deploys** → hit the endpoint and verify the behavior
+- **Visual / layout work** (HTML, slides, design) → screenshot the rendered output. Multi-slide decks: screenshot every slide. Never declare done from code alone.
+- **Source-of-truth claims** → check the deploy config (Vercel, git log, build scripts) before diffing two trees as if they're versions of the same file.
+- **Strategic shifts** → audit all existing content on the affected surface for consistency. A changed thesis must not leave stale claims behind.
+
+If you cannot verify (no browser, no deploy access, no DB access), say so explicitly instead of claiming success.
+
+---
+
+## Friction Capture — The Compounding System
+
+Goal: turn in-the-moment frustrations into system improvements that make next week faster. Reviews don't work because friction is freshest when it happens. Capture at peak signal, process weekly.
+
+### Trigger phrases — capture immediately
+
+When the user says any of these, **immediately** append an entry to `memory/pending-improvements.md`:
+- "log it" / "log that"
+- "that was dumb" / "that was annoying"
+- "don't do that again"
+- "capture this"
+- "friction"
+
+Don't ask the user to describe the friction. Extract it from recent conversation context yourself. Entry format:
+
+```
+### YYYY-MM-DD HH:MM — [one-line title]
+- **What happened:** [specific — what the AI did, what the user expected, what broke]
+- **Why it's friction:** bug | repetition | workflow | quality | speed
+- **Fix hypothesis:** [hook | feedback memory | CLAUDE.md edit | skill update | none]
+```
+
+After appending, confirm in one line: "Logged — [title]. Processed in next weekly review."
+
+### Weekly processing
+
+Run a weekly review on your cadence. The review **must produce at least one durable artifact** — a hook rule, feedback memory, CLAUDE.md edit, or skill update. No journaling allowed.
+
+**Preference order:** prevention (hook that blocks the bad behavior) > guidance (feedback memory the AI loads) > behavior (CLAUDE.md edit) > capability (new skill).
+
+The point: friction that gets captured but never converted is just complaining. Force conversion.
+
+---
+
+## Coding Guidelines
+
+Behavioral guidelines to reduce common LLM coding mistakes. **Tradeoff:** these bias toward caution over speed. For trivial tasks, use judgment.
+
+### 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+### 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+### 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it — don't delete it.
+
+When your changes create orphans:
+- Remove imports / variables / functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: every changed line should trace directly to the user's request.
+
+### 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+## Tool Routing — Use the Right Tool Automatically
+
+Map the work types you do most often to the tools / commands you use to do them. Your AI should detect the type of work and route to the right tool without being asked.
+
+| Signal | Tool / Command | What it does |
+|--------|----------------|--------------|
+| {e.g., Plan a new feature} | `{your planning command}` | {one-line note} |
+| {e.g., Code review before merging} | `{your review command}` | {one-line note} |
+| {e.g., QA test in a real browser} | `{your QA command}` | {one-line note} |
+| {e.g., Debug a recurring bug} | `{your debug command}` | {one-line note} |
+
+<!--
+Fill this with the tools you actually use. Group by domain (coding, writing,
+research) if you have many. Keep entries concrete: "plan a feature" beats
+"do planning." If you don't have specific commands yet, delete this section
+and add it back when you do.
+-->
 
 ---
 
 ## Domain Protocols (Customize These)
 
-Domain protocols are automatic behaviors that fire when specific work types are detected.
-They ensure your AI loads the right context before doing domain-specific work.
-
-Below is an example template. Create your own for the types of work you do repeatedly.
+Domain protocols are automatic behaviors that fire when specific work types are detected. They ensure your AI loads the right context before doing domain-specific work.
 
 ### Example: {Domain} Protocol — Automatic for {Work Type}
+
 **Trigger:** Any time {description of when this should fire}.
 
 **Order of operations:**
@@ -176,6 +261,7 @@ Real examples of domain protocols:
 ---
 
 ## The Learning System
+
 The most important system. Every session should leave you smarter.
 - Before building anything: search for existing patterns
 - After discovering something: write it immediately, don't wait until session end
