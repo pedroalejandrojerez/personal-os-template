@@ -27,7 +27,7 @@ if [ -f .claude/settings.json ]; then
   fi
 fi
 
-for file in .claude/hooks/*.sh scripts/*.sh scripts/detect-change-risk scripts/verify-before-ship; do
+for file in .claude/hooks/*.sh scripts/*.sh scripts/detect-change-risk scripts/onboard-personal-os scripts/verify-before-ship; do
   [ -f "$file" ] || continue
   run_check "shell syntax: $file" bash -n "$file"
 done

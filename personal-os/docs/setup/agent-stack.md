@@ -11,6 +11,16 @@ This template assumes a split between planning and execution.
 | Workflow | G-Stack | Skill package | Office hours, plan reviews, design review, QA, security review, ship, canary, and retro. |
 | Parallel work | Conductor | Workspace manager | Run separate agents in separate workspaces with clear state. |
 
+## First Install
+
+Start with guided onboarding:
+
+```bash
+./scripts/onboard-personal-os
+```
+
+That script asks for personal info, company/team info, primary project, agent stack, risky areas, and communication style. Details are in `docs/setup/onboarding.md`.
+
 ## Operating Rule
 
 Claude owns the plan. Composer and Codex own execution.

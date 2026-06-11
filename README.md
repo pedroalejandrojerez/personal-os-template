@@ -71,15 +71,18 @@ Share the repo with your team. Everyone clones it.
 
 ```bash
 mkdir ~/my-os
-cp -r personal-os/* ~/my-os/
+cp -R personal-os/. ~/my-os/
 cd ~/my-os
+./scripts/onboard-personal-os
 git init && git add -A && git commit -m "init: personal operating system"
 ```
 
-Then customize:
-- Fill in `CLAUDE.md` — your name, role, focus, timezone
-- Replace `~/{team-repo}/` references with your actual team repo path (e.g., `~/company-os/`)
-- Fill in `memory/MEMORY.md` — your active projects
+The onboarding script asks for your personal info, company/team info, primary project, agent stack, and protected areas. It fills the local files for you.
+
+Manual fallback:
+- Fill in `CLAUDE.md` and `AGENTS.md`
+- Replace `~/{team-repo}/` references with your actual team repo path
+- Fill in `memory/MEMORY.md`
 - Rename `memory/my-project/` to your actual project name
 
 ### Step 3: Open in Cursor / Claude Code
@@ -136,6 +139,7 @@ If the answer is no, something should have been captured.
 | `.claude/commands/` | Workflow slash-command wrappers |
 | `.github/` | Pull request template and verification workflow |
 | `docs/agent-task-templates.md` | Lanes agents fill before non-trivial work |
+| `docs/setup/onboarding.md` | Guided onboarding questions and outputs |
 | `docs/setup/agent-stack.md` | Full Claude, Composer, Codex, G-Stack, and Conductor setup guide |
 | `docs/setup/workflow-skills.md` | Workflow-integrated skills only |
 | `docs/qa/` | QA checklists for UI, billing, DB, auth, onboarding, and voice |
@@ -233,6 +237,7 @@ If you're working solo, just use the `personal-os/` folder. Delete the `~/{team-
 Run these from your personal OS root:
 
 ```bash
+scripts/onboard-personal-os
 scripts/detect-change-risk
 scripts/verify-before-ship
 scripts/slice-board.py --help

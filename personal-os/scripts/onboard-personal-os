@@ -1,0 +1,249 @@
+#!/usr/bin/env bash
+# Guided local setup for a newly cloned personal OS.
+
+set -euo pipefail
+
+if [ ! -f "CLAUDE.md" ] || [ ! -f "AGENTS.md" ] || [ ! -f "memory/MEMORY.md" ]; then
+  echo "Run this from the root of your copied personal-os folder." >&2
+  exit 1
+fi
+
+ask() {
+  local prompt="$1"
+  local default="${2:-}"
+  local answer
+
+  if [ -n "$default" ]; then
+    printf "%s [%s]: " "$prompt" "$default" >&2
+  else
+    printf "%s: " "$prompt" >&2
+  fi
+
+  IFS= read -r answer
+  if [ -z "$answer" ]; then
+    printf '%s\n' "$default"
+  else
+    printf '%s\n' "$answer"
+  fi
+}
+
+ask_required() {
+  local prompt="$1"
+  local answer=""
+
+  while [ -z "$answer" ]; do
+    answer=$(ask "$prompt")
+    if [ -z "$answer" ]; then
+      echo "Required." >&2
+    fi
+  done
+
+  printf '%s\n' "$answer"
+}
+
+yes_no() {
+  local prompt="$1"
+  local default="${2:-y}"
+  local answer
+
+  while true; do
+    answer=$(ask "$prompt (y/n)" "$default")
+    case "$answer" in
+      y|Y|yes|YES) return 0 ;;
+      n|N|no|NO) return 1 ;;
+      *) echo "Answer y or n." >&2 ;;
+    esac
+  done
+}
+
+slugify() {
+  printf '%s' "$1" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
+}
+
+replace_token() {
+  local token="$1"
+  local value="$2"
+
+  TOKEN="$token" VALUE="$value" perl -0pi -e 's/\Q$ENV{TOKEN}\E/$ENV{VALUE}/g' \
+    CLAUDE.md \
+    AGENTS.md \
+    active-backlog.md \
+    handoff.md \
+    memory/MEMORY.md \
+    .cursor/rules/personal-os-agent-stack.mdc 2>/dev/null || true
+}
+
+write_file() {
+  local path="$1"
+  shift
+  mkdir -p "$(dirname "$path")"
+  printf '%s\n' "$@" > "$path"
+}
+
+today=$(date +%Y-%m-%d)
+workspace_name=$(basename "$(pwd)")
+detected_timezone=$(date +%Z 2>/dev/null || printf 'local')
+
+cat <<'EOF'
+Personal OS guided setup
+
+This writes local personal and company context into your clone.
+Do not run it in the public template repo unless you are testing.
+EOF
+echo
+
+full_name=$(ask_required "Your full name")
+first_name=$(printf '%s' "$full_name" | awk '{print $1}')
+role=$(ask_required "Your role")
+focus_areas=$(ask_required "Your top focus areas, comma-separated")
+timezone=$(ask "Your timezone" "$detected_timezone")
+word_of_year=$(ask "Optional word of the year")
+workspace_path=$(ask "Path to this personal OS" "~/$workspace_name")
+
+primary_project=$(ask_required "Primary project name")
+primary_project_slug=$(ask "Primary project slug/folder" "$(slugify "$primary_project")")
+primary_project_role=$(ask "Your role on that project" "$role")
+
+company_name=$(ask "Company or team name, optional")
+company_role=$(ask "Your role in the company/team" "$role")
+team_os_path=""
+if yes_no "Do you use a shared team OS repo?" "n"; then
+  team_os_path=$(ask "Team OS path" "~/company-os")
+fi
+
+planning_model=$(ask "Planning model label" "Claude, most capable model available")
+execution_tools=$(ask "Execution tools" "Cursor Composer and Codex")
+uses_conductor="no"
+if yes_no "Will you use Conductor workspaces?" "y"; then
+  uses_conductor="yes"
+fi
+
+uses_gstack="no"
+if [ -d "$HOME/.claude/skills/gstack/.agents/skills" ]; then
+  gstack_default="y"
+else
+  gstack_default="n"
+fi
+if yes_no "Do you use G-Stack?" "$gstack_default"; then
+  uses_gstack="yes"
+fi
+
+protected_areas=$(ask "Areas agents must treat as risky" "billing, payments, auth, production data, deploys")
+communication_style=$(ask "Communication style" "Short, direct, plain language")
+
+replace_token "{YOUR_NAME}" "$full_name"
+replace_token "{YOUR_ROLE}" "$role"
+replace_token "{YOUR_FOCUS_AREAS}" "$focus_areas"
+replace_token "{YOUR_TIMEZONE}" "$timezone"
+replace_token "{OPTIONAL_WORD}" "$word_of_year"
+replace_token "~/{workspace-name}/" "$workspace_path/"
+replace_token "{primary-project}" "$primary_project_slug"
+replace_token "{Project Name}" "$primary_project"
+replace_token "memory/{project-slug}/index.md" "memory/$primary_project_slug/index.md"
+replace_token "{your role on this project}" "$primary_project_role"
+if [ -n "$team_os_path" ]; then
+  replace_token "~/{team-repo}/" "$team_os_path/"
+else
+  replace_token "~/{team-repo}/" "not configured/"
+fi
+
+if [ -z "$team_os_path" ]; then
+  perl -0pi -e 's/- \*\*Shared team brain\*\*: `[^`]+` \(optional, remove if solo\)/- **Shared team brain**: not configured/g' CLAUDE.md
+  perl -0pi -e 's/\n## Shared Team Brain\n(?:- .*\n)+/\n## Shared Team Brain\n- None configured yet.\n/s' memory/MEMORY.md
+fi
+
+if [ -d "memory/my-project" ] && [ "$primary_project_slug" != "my-project" ]; then
+  rm -rf "memory/$primary_project_slug"
+  mv memory/my-project "memory/$primary_project_slug"
+fi
+
+write_file "memory/$primary_project_slug/index.md" \
+  "# $primary_project" \
+  "" \
+  "## Role" \
+  "$primary_project_role" \
+  "" \
+  "## Current Focus" \
+  "- $focus_areas" \
+  "" \
+  "## Notes" \
+  "- Created by guided onboarding on $today."
+
+write_file "memory/personal-context.md" \
+  "# Personal Context" \
+  "" \
+  "- Name: $full_name" \
+  "- First name: $first_name" \
+  "- Role: $role" \
+  "- Focus areas: $focus_areas" \
+  "- Timezone: $timezone" \
+  "- Word of the year: ${word_of_year:-none}" \
+  "- Communication style: $communication_style" \
+  "- Planning model: $planning_model" \
+  "- Execution tools: $execution_tools" \
+  "- Uses Conductor: $uses_conductor" \
+  "- Uses G-Stack: $uses_gstack" \
+  "- Risky/protected areas: $protected_areas"
+
+if [ -n "$company_name" ]; then
+  write_file "memory/company-context.md" \
+    "# Company Context" \
+    "" \
+    "- Company/team: $company_name" \
+    "- Role: $company_role" \
+    "- Team OS path: ${team_os_path:-not configured}" \
+    "" \
+    "Add private strategy, customers, financials, and team process notes here or in your private team OS. Do not commit secrets."
+fi
+
+cat > "handoff.md" <<EOF
+# Session Handoff - $today
+## What happened
+- Guided onboarding completed for $full_name.
+- Primary project set to $primary_project.
+- Agent stack set to Claude planning, $execution_tools execution, G-Stack: $uses_gstack, Conductor: $uses_conductor.
+
+## Next session - top 3
+1. Review \`memory/personal-context.md\`.
+2. Add the first real backlog item to \`active-backlog.md\`.
+3. Run \`scripts/verify-before-ship\`.
+EOF
+
+cat > "active-backlog.md" <<EOF
+# Active Backlog - $full_name
+
+## In Progress
+- [ ] Finish personal OS setup review
+
+## Up Next
+- [ ] Add first real project loop for $primary_project
+- [ ] Add any private skills or references you use often
+- [ ] Run first \`/review-week\` after one week of use
+
+## Parked
+- (items that are not active but should not be forgotten)
+EOF
+
+if ! grep -q "personal-context.md" memory/MEMORY.md; then
+  perl -0pi -e 's/## Active Projects/## Personal Context\n- [Personal context](personal-context.md)\n\n## Active Projects/' memory/MEMORY.md
+fi
+if [ -f memory/company-context.md ] && ! grep -q "company-context.md" memory/MEMORY.md; then
+  perl -0pi -e 's/## Active Projects/## Company Context\n- [Company context](company-context.md)\n\n## Active Projects/' memory/MEMORY.md
+fi
+
+echo
+echo "Onboarding complete."
+echo
+echo "Next steps:"
+step=1
+echo "  $step. Review memory/personal-context.md"
+step=$((step + 1))
+echo "  $step. Run ./scripts/setup-bridge-skills.sh"
+step=$((step + 1))
+if [ "$uses_gstack" = "yes" ]; then
+  echo "  $step. Run ./scripts/setup-gstack-skills.sh"
+  step=$((step + 1))
+fi
+echo "  $step. Run scripts/verify-before-ship"
