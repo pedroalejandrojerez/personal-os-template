@@ -1,0 +1,44 @@
+name: Verify
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install root dependencies when present
+        run: |
+          if [ ! -f package.json ]; then
+            echo "SKIPPED: package.json is not present"
+            exit 0
+          fi
+
+          if [ -f pnpm-lock.yaml ]; then
+            corepack enable
+            pnpm install --frozen-lockfile
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --immutable
+          elif [ -f bun.lock ] || [ -f bun.lockb ]; then
+            npm install -g bun
+            bun install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "SKIPPED: no lockfile found for dependency install"
+          fi
+
+      - name: Run pre-ship verification
+        run: bash scripts/verify-before-ship

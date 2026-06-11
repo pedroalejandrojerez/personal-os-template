@@ -1,4 +1,4 @@
-# Personal OS for Claude Code / Cursor
+# Personal OS for Claude Code, Codex, Cursor, and Conductor
 
 A system for making every AI session smarter than the last. Fork this, fill in the blanks, and stop solving the same problems twice.
 
@@ -6,12 +6,14 @@ A system for making every AI session smarter than the last. Fork this, fill in t
 
 This is a two-layer operating system that wraps around Claude Code or Cursor. It gives your AI:
 
-- **Persistent memory** across sessions (hub & spoke architecture)
-- **Session continuity** — handoff files so every session picks up where the last left off
-- **Compounding learning** — triggers that capture reusable patterns in real-time, not after the fact
-- **WIP discipline** — limits and gates that prevent scope creep and half-finished work
-- **Skill library** — team and personal patterns that save time on repeated problem types
-- **Team knowledge sharing** — learnings compound across everyone, not just you
+- **Persistent memory** across sessions through a hub and spoke architecture
+- **Session continuity** through handoff files and an active backlog
+- **Agent parity** with both `CLAUDE.md` and `AGENTS.md`
+- **Conductor workspace states** for planning, in progress, review, merged, and done
+- **Task lanes and QA checklists** before risky edits
+- **Workflow gates** for source-of-truth UI work, pre-ship checks, and production approval phrases
+- **Build bridge skills** for `/grill-me`, `/build-prd`, and `/prd-to-slices`
+- **Team knowledge sharing** when you also use a shared team OS
 
 ## The Two-Layer Architecture
 
@@ -23,6 +25,9 @@ This system uses two repos that work together:
   memory/                # Your personal memory
   handoff.md             # Your session continuity
   active-backlog.md      # Your task tracking
+  AGENTS.md              # Codex / non-Claude instructions
+  docs/                  # task lanes and QA checklists
+  scripts/               # verification, risk detection, slice board helpers
 
 {company}-os/            ← TEAM (shared, everyone commits)
   CLAUDE.md              # Team-wide AI instructions
@@ -76,7 +81,21 @@ Then customize:
 
 ### Step 3: Open in Cursor / Claude Code
 
-Both Cursor and Claude Code automatically read `CLAUDE.md` from the project root. Just open your personal OS folder as your workspace, and the system boots up.
+Claude Code and Cursor read `CLAUDE.md`. Codex reads `AGENTS.md`. Conductor can use `.conductor/settings.toml` to sync bridge skills into `.agents/skills/`.
+
+Open your personal OS folder as the workspace. The system boots up from `handoff.md`, `active-backlog.md`, and `memory/MEMORY.md`.
+
+### Optional: Conductor setup
+
+If you use Conductor, keep the included `.conductor/settings.toml` and run the setup script once:
+
+```bash
+cd ~/my-os
+./scripts/setup-bridge-skills.sh
+./scripts/setup-gstack-skills.sh   # optional, only if you have G-Stack skills installed
+```
+
+The template uses `.context/` for in-flight agent coordination and keeps `.agents/` generated locally.
 
 ## Philosophy
 
@@ -93,6 +112,16 @@ If the answer is no, something should have been captured.
 | File | Purpose |
 |------|---------|
 | `CLAUDE.md` | AI system instructions — the core brain |
+| `AGENTS.md` | Non-Claude agent instructions for Codex and similar tools |
+| `.conductor/settings.toml` | Conductor workspace setup |
+| `.claude/settings.json` | Claude Code hooks for workflow gates |
+| `.claude/hooks/` | Guard, format, review, QA, and source-of-truth hooks |
+| `.github/` | Pull request template and verification workflow |
+| `docs/agent-task-templates.md` | Lanes agents fill before non-trivial work |
+| `docs/qa/` | QA checklists for UI, billing, DB, auth, onboarding, and voice |
+| `scripts/detect-change-risk` | Changed-file risk classifier |
+| `scripts/verify-before-ship` | Read-only pre-ship report |
+| `scripts/slice-board.py` | Conductor slice board updater |
 | `memory/MEMORY.md` | Master index, always loaded (<50 lines) |
 | `memory/my-project/index.md` | Example project hub (<60 lines) |
 | `memory/skills/example-skill.md` | Skill template — reusable patterns |
@@ -169,10 +198,32 @@ The personal `CLAUDE.md` ships with a few opinionated behaviors. Customize or de
 | **Friction Capture** | 5 trigger phrases ("log it", "that was dumb", etc.) capture frustrations live to `memory/pending-improvements.md`. Weekly review converts them into hooks, feedback memories, or CLAUDE.md edits — no journaling allowed |
 | **Coding Guidelines** | 4 rules: think before coding, simplicity first, surgical changes, goal-driven execution. Reduces common LLM mistakes |
 | **Tool Routing** | A signal-to-tool table. Your AI auto-routes work types to the right command (planning, review, QA, etc.) without you having to ask |
+| **Conductor States** | Every workspace reports state, next action, owner, and risk |
+| **Workflow Approval Rules** | Production DB and deploy actions require exact phrases |
+| **Task Lanes** | Agents fill the right lane before non-trivial edits |
+| **Build Bridge** | `/grill-me` → `/build-prd` → `/prd-to-slices` turns plans into slices |
 
 ## Solo Use (No Team)
 
 If you're working solo, just use the `personal-os/` folder. Delete the `~/{team-repo}/` references from CLAUDE.md, and remove the team-related steps from the session protocols. Everything else works identically.
+
+## Workflow Commands
+
+Run these from your personal OS root:
+
+```bash
+scripts/detect-change-risk
+scripts/verify-before-ship
+scripts/slice-board.py --help
+```
+
+For larger builds:
+
+```text
+/grill-me
+/build-prd
+/prd-to-slices
+```
 
 ## Tips
 

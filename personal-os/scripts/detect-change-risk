@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# Detect high-risk changed files and print the verification checklist to use.
+
+set -euo pipefail
+
+ref_exists() {
+  git rev-parse --verify --quiet "$1" >/dev/null
+}
+
+choose_base() {
+  if [ -n "${1:-}" ]; then
+    printf '%s\n' "$1"
+  elif ref_exists origin/main; then
+    printf 'origin/main\n'
+  elif ref_exists main; then
+    printf 'main\n'
+  else
+    printf '\n'
+  fi
+}
+
+changed_files() {
+  local base="$1"
+  local merge_base=""
+
+  if [ -n "$base" ]; then
+    merge_base=$(git merge-base "$base" HEAD 2>/dev/null || printf '%s' "$base")
+    git diff --name-only "$merge_base"...HEAD 2>/dev/null || git diff --name-only "$merge_base" HEAD 2>/dev/null || true
+  fi
+
+  git diff --name-only
+  git diff --cached --name-only
+  git ls-files --others --exclude-standard
+}
+
+groups=""
+
+add_group() {
+  case "$groups" in
+    *"|$1|"*) ;;
+    *) groups="${groups}|$1|" ;;
+  esac
+}
+
+has_group() {
+  case "$groups" in
+    *"|$1|"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+print_group() {
+  local group="$1"
+
+  case "$group" in
+    "Billing/payment")
+      cat <<'EOF'
+- Billing/payment
+  Required verification:
+  - Fill the billing lane in docs/agent-task-templates.md.
+  - Use docs/qa/billing.md for visible billing UI.
+  - Verify provider state and app entitlement state agree.
+  - Stop before real customers, payments, subscriptions, or production entitlements can change.
+EOF
+      ;;
+    "Database migrations/access")
+      cat <<'EOF'
+- Database migrations/access
+  Required verification:
+  - Fill the database migration lane in docs/agent-task-templates.md.
+  - Apply or dry-run the migration locally, then query proof rows.
+  - Verify access rules when policies, functions, or tables change.
+  - Stop before production DB mutation unless the user says the exact approval phrase.
+EOF
+      ;;
+    "Auth/session/OAuth")
+      cat <<'EOF'
+- Auth/session/OAuth
+  Required verification:
+  - Fill the auth lane in docs/agent-task-templates.md.
+  - Test login, logout, callback, resume, and cross-user access where relevant.
+  - Verify no route leaks data across users.
+  - Stop if dashboard credentials, production auth config, or redirect URIs must change.
+EOF
+      ;;
+    "Onboarding/state")
+      cat <<'EOF'
+- Onboarding/state
+  Required verification:
+  - Use docs/qa/onboarding.md.
+  - Verify routing, save, resume, and handoff.
+  - Query state rows after each key step.
+  - Stop if the locked spec and production behavior disagree.
+EOF
+      ;;
+    "Voice/audio")
+      cat <<'EOF'
+- Voice/audio
+  Required verification:
+  - Use docs/qa/voice-mode.md.
+  - Test mobile response persistence and playback.
+  - Verify transcript/audio rows are user-scoped.
+  - Stop if safety behavior, vendor contracts, or production voice data are affected.
+EOF
+      ;;
+    "Deploy/release/config")
+      cat <<'EOF'
+- Deploy/release/config
+  Required verification:
+  - Fill the release/ship lane in docs/agent-task-templates.md.
+  - Run git diff --stat, relevant checks, and PR or deploy verification if approved.
+  - Name deploy target and rollback plan before any production deploy.
+  - Stop unless the user says the exact production deploy approval phrase.
+EOF
+      ;;
+  esac
+}
+
+base=$(choose_base "${1:-}")
+files=$(changed_files "$base" | sed '/^$/d' | sort -u)
+
+if [ -z "$files" ]; then
+  printf 'Risk level: low\n'
+  printf 'Base: %s\n' "${base:-none}"
+  printf 'No changed files detected.\n'
+  exit 0
+fi
+
+while IFS= read -r file; do
+  lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+
+  case "$lower" in
+    *.md|docs/*|.context/*|memory/*)
+      continue
+      ;;
+  esac
+
+  case "$lower" in
+    *stripe*|*billing*|*subscription*|*checkout*|*price*|*trial*|*renewal*|*entitlement*|*payment*)
+      add_group "Billing/payment"
+      ;;
+  esac
+
+  case "$lower" in
+    *supabase/migrations/*|*"/migrations/"*.sql|*migrations/*.sql|*rls*|*policy*|*policies*|*security-definer*|*security_definer*|*schema.sql*)
+      add_group "Database migrations/access"
+      ;;
+  esac
+
+  case "$lower" in
+    *auth*|*login*|*logout*|*session*|*oauth*|*callback*|*middleware.ts|*middleware.js)
+      add_group "Auth/session/OAuth"
+      ;;
+  esac
+
+  case "$lower" in
+    *onboarding*|*intake*|*step_version*|*step-version*|*profile-type*|*profile_type*)
+      add_group "Onboarding/state"
+      ;;
+  esac
+
+  case "$lower" in
+    *voice*|*audio*|*microphone*|*tap-to-listen*|*tap_to_listen*|*transcript*)
+      add_group "Voice/audio"
+      ;;
+  esac
+
+  case "$lower" in
+    .github/workflows/*|*.github/workflows/*|*vercel.json|*netlify.toml|*fly.toml|*render.yaml|*render.yml|*dockerfile|*docker-compose.yml|*docker-compose.yaml|*next.config.*|*package.json|*package-lock.json|*pnpm-lock.yaml|*yarn.lock|*bun.lock|*bun.lockb|*.env*|*.claude/hooks/*|scripts/verify*|scripts/*ship*)
+      add_group "Deploy/release/config"
+      ;;
+  esac
+done <<EOF
+$files
+EOF
+
+printf 'Base: %s\n' "${base:-none}"
+printf 'Changed files:\n'
+printf '%s\n' "$files" | sed 's/^/- /'
+
+if [ -z "$groups" ]; then
+  printf '\nRisk level: low\n'
+  printf 'No high-risk groups detected.\n'
+  printf 'Still run the relevant task lane, git diff --stat, and narrow checks before handoff.\n'
+  exit 0
+fi
+
+printf '\nRisk level: high\n'
+printf 'Required groups:\n'
+for group in \
+  "Billing/payment" \
+  "Database migrations/access" \
+  "Auth/session/OAuth" \
+  "Onboarding/state" \
+  "Voice/audio" \
+  "Deploy/release/config"
+do
+  if has_group "$group"; then
+    print_group "$group"
+  fi
+done

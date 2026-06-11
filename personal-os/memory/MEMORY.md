@@ -15,8 +15,10 @@ My role: {your role on this project}
 <!-- Add more projects as needed. Keep each to 2-3 lines max. -->
 
 ## Skills (Personal)
-- (none yet — as you build reusable patterns, log them here)
-- Format: **{Skill Name}** — `memory/skills/{name}.md` — {one-line description}
+- **grill-me** — `memory/skills/grill-me/skill.md` — one-question-at-a-time tactical planning.
+- **build-prd** — `memory/skills/build-prd/skill.md` — turns a plan into `.context/builds/{feature}/prd.md`.
+- **prd-to-slices** — `memory/skills/prd-to-slices/skill.md` — turns a Build PRD into a Conductor slice board.
+- Format for new skills: **{Skill Name}** — `memory/skills/{name}.md` — {one-line description}
 
 ## Decisions
 - (log decisions with reasoning — link to `memory/decisions/YYYY-MM-DD-{slug}.md`)

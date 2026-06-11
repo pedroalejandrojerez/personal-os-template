@@ -1,268 +1,221 @@
 # {YOUR_NAME}'s Operating System
 
-You are working inside {YOUR_NAME}'s personal workspace. This is a private scratchpad for capturing learnings, decisions, and work-in-progress.
+You are working inside {YOUR_NAME}'s personal workspace. This is a private operating system for capturing learnings, decisions, skills, and work in progress.
+
+For non-Claude agents, keep `AGENTS.md` in sync with this file.
 
 ## Who I Am
+
 - **Name**: {YOUR_NAME}
 - **Role**: {YOUR_ROLE}
 - **Focus areas**: {YOUR_FOCUS_AREAS}
 - **Time zone**: {YOUR_TIMEZONE}
+- **Word of the year**: {OPTIONAL_WORD}
+
+## What This Repo Is
+
+This repo is a personal operating system. It is not necessarily a software project. Do not assume build, lint, or test commands exist.
 
 ## Key Directories
+
 - **My workspace**: `~/{workspace-name}/`
-- **Shared team brain**: `~/{team-repo}/` (optional — remove if working solo)
-
----
-
-## How You Talk To Me
-
-Customize this section with your own communication preferences. Examples below — replace, edit, or delete.
-
-- **Reading level:** Write at a {fifth-grade / plain-language / technical} reading level. {Short sentences. Common words. Define jargon the first time it appears.}
-- **Tone:** Be direct. Don't soften answers. If something's wrong, say so.
-- **Format:** Use tables and bullets when comparing options. Avoid walls of text.
-- **Recommendations:** Lead with a recommendation. Don't present equal-weight options. Say which and why, then share alternatives.
-
-This rule applies to **chat responses**, not to artifacts written for other agents or production code. A spec written for a builder agent can be technical; the explanation back to me is plain-language.
-
----
+- **Primary project**: `{primary-project}/`
+- **Shared team brain**: `~/{team-repo}/` (optional, remove if solo)
 
 ## Session Start
-1. Read `handoff.md` — what happened last session (under 20 lines)
-2. Check `active-backlog.md` — find the item closest to shipped
-3. Read `~/{team-repo}/learnings/` — new team learnings (files modified in last 3 days)
-4. Read `~/{team-repo}/skills-library/README.md` — check for new team skills
-5. Present: "**[X] is closest to done.** It needs [specific task]. Ship it, or work on something else?"
 
-Default action is always: **close an open loop**.
+1. Read `handoff.md`, under 20 lines.
+2. Check `active-backlog.md`, find the item closest to shipped.
+3. Read `memory/MEMORY.md`, the master index.
+4. Present: "**[X] is closest to done.** It needs [specific task]. Ship it, or work on something else?"
 
-**WIP Limit:** Max 3 items "in progress" at a time. To start a 4th, finish or kill one first.
+Default action is always: close an open loop.
 
----
+## The Ship Test
 
-## The Ship Test — Before Starting Anything New
+Before starting anything new, ask:
 
 > "Is there something already built that could ship instead?"
 
-If yes, ship it first. New work only starts when nothing is at 80%+.
+If yes, ship it first. New work starts only when nothing is at 80% or more.
 
-If you explicitly want to start something new, that's fine — but name what's being deprioritized.
+If the user explicitly wants to start something new, that is fine. Name what is being deprioritized.
 
----
+## Conductor Workspace States
 
-## Session Close
-1. **Learning gate (the gate, not optional)** — Before writing the handoff, ask: "What did we learn today that would save >10 minutes next time? Any new skills to extract?"
-   - Reusable pattern → `memory/skills/{name}.md` (personal first; promote to `~/{team-repo}/skills-library/` once polished)
-   - Team-level learning → `~/{team-repo}/learnings/YYYY-MM-DD-{slug}.md`, then `cd ~/{team-repo} && git add learnings/ && git commit -m "learning: {title}" && git push`
-   - Decision with non-obvious reasoning → `memory/decisions/YYYY-MM-DD-{slug}.md`
-2. Update `handoff.md` (under 20 lines) — what was done + top 3 next actions
-3. Update `active-backlog.md` — mark completed, add new items, park anything stalled 3+ sessions
+Every Conductor workspace must have one visible state:
 
----
+| State | Meaning | Exit Rule |
+|-------|---------|-----------|
+| `planning` | The agent is shaping the work. No production code yet. | Plan, scope, risks, and owner are clear. |
+| `in progress` | The agent is building. | Diff is ready for review. |
+| `review` | The user or another reviewer is checking the diff. | Comments are fixed and checks pass. |
+| `merged` | The PR landed on `main`. | The real app, endpoint, or artifact was verified. |
+| `done` | The loop is closed. | Handoff and backlog are updated, then archive the workspace. |
 
-## Compounding Learning Protocol — Three Capture Triggers
+At the start of any Conductor status update, report:
 
-Capture **during** sessions, not after. By the end, the freshness is gone.
-
-**Trigger 1 — "We just built something reusable"**
-Any integration, automation, pipeline, or pattern that could apply elsewhere.
-→ Extract to `memory/skills/{name}.md` before moving on.
-
-**Trigger 2 — "I just explained something that took >2 minutes"**
-Any concept, framework, decision rationale, or technical explanation.
-→ Log immediately to the relevant memory spoke. Right then, not later.
-
-**Trigger 3 — "This problem feels familiar"**
-If you recognize a problem type:
-→ Check `~/{team-repo}/skills-library/` and `memory/skills/` FIRST.
-→ If a pattern exists, use it. If this is the second time and no pattern exists — create one now.
-
-**The Compound Test:** "If a brand new session started this exact same task tomorrow, would it be faster because of what we logged today?"
-
-If the answer is no, something should have been captured.
-
----
-
-## Memory Architecture: Hub & Spoke
-
-```
-memory/MEMORY.md (master index — always loaded, <50 lines)
-  ├── {project}/index.md    ← project hub (<60 lines)
-  │     ├── {topic-a}.md    ← spoke: topic-specific detail
-  │     └── {topic-b}.md    ← spoke: grows as needed
-  ├── skills/               ← personal skills vault
-  ├── decisions/            ← decisions with reasoning
-  └── journal/              ← session observations (optional)
+```text
+State: [planning | in progress | review | merged | done]
+Next action: [one concrete next step]
+Owner: [user | agent | reviewer]
+Risk: [low | medium | high]
 ```
 
-**Rules:**
-- MEMORY.md stays under 50 lines (it's a table of contents, not content)
-- Hubs stay under 60 lines — use spokes for detail
-- Don't duplicate what's in the team repo — personal memory is for YOUR context
+Use `.context/active-workspaces.md` only when there are two or more active workspaces, or when one large build has multiple slices.
 
----
+## Workflow Approval Rules
+
+Short approvals are narrow. Treat "yes", "ok", "sure", "go", "push", or similar replies as approval for the last explicitly named action only.
+
+- "push" means push the current approved commit only. It does not mean merge, deploy, edit unrelated files, or update a parent repo.
+- "ship" requires the agent to restate branch, files changed, tests run, deploy target, rollback plan, and exact next action before doing anything.
+- If the next action changes repo state beyond the named action, ask again.
+- Any production DB mutation requires this exact phrase from the user: `approved for production DB mutation`.
+- Any production deploy requires this exact phrase from the user: `approved to deploy production`.
+
+Before risky fixes, name files in scope, files out of scope, the symptom that proves success, the symptom that means stop and report, and whether deploy is allowed.
+
+Risky means billing, payments, database migrations, auth, intake/state machines, settings, voice/audio, safety, or production deploy paths. Edit this list for your product.
+
+## Agent Workflow Router
+
+Use existing workflow assets before creating anything new.
+
+| Moment | Use | Required action |
+|--------|-----|-----------------|
+| Before non-trivial edits | `docs/agent-task-templates.md` | Fill one lane with task, outcome, source of truth, scope, checks, stop condition, and approval needed. |
+| UI or product work | `docs/qa/ui-source-of-truth.md` plus the relevant `docs/qa/*` checklist | Name the source of truth before editing. Localhost is only a viewer. |
+| Risky area | `docs/agent-task-templates.md` and `scripts/detect-change-risk` | Name in-scope files, out-of-scope files, success symptom, stop symptom, and deploy permission before patching. |
+| After edits | `scripts/detect-change-risk` | Run it and follow every checklist it prints. |
+| Before commit, push, PR, merge, or deploy | `scripts/verify-before-ship` | Run the pre-ship report, check dirty files, and keep approvals narrow. |
+| Before ending a session | Session Close section | Update `handoff.md`, update `active-backlog.md`, and log reusable memory only when useful. |
+
+## Startup Engineering Mode
+
+Keep things simple and ship useful work fast. Handle the most important cases first.
+
+If the product handles sensitive data, never skip safety, privacy, auth, payment, or crisis edge cases.
+
+### Small Code Doctrine
+
+Before coding:
+
+- Name the smallest path.
+- Estimate files touched.
+- Reuse existing modules first.
+- Avoid new abstractions unless they remove real duplication.
+
+During coding:
+
+- Touch only needed files.
+- Do not add fallback systems for unlikely cases.
+- Stop and re-plan if the patch grows past the plan.
+
+Before declaring done:
+
+- Run `git diff --stat`.
+- Explain why the patch is smaller than the obvious version.
+- Remove code your change made unused.
+
+Pause and explain before continuing if a change adds more than 200 lines or touches more than 5 files, unless the user already approved that scope.
+
+## Review Agents With Comments
+
+When reviewing agent work, do not rewrite the code first. Leave a focused review comment and let the agent fix it.
+
+Use this format:
+
+```md
+Review comment:
+File: [path]
+Issue: [what looks wrong]
+Request: [explain or fix]
+Constraint: Keep the patch small and reuse existing code where possible.
+```
+
+## Planning To Build Bridge
+
+Use this path for larger builds:
+
+1. Pressure-test the idea.
+2. Review strategy, design, engineering, and developer experience as needed.
+3. Run `/grill-me` to force tactical decisions, one question at a time.
+4. Run `/build-prd` to write `.context/builds/{feature}/prd.md`.
+5. Run `/prd-to-slices` to write `.context/builds/{feature}/slices.md`.
+6. Run the first slice human-in-the-loop.
+7. Open one Conductor workspace per independent AFK slice only after the first slice proves the format.
+8. Review, QA, ship, and update the board with `scripts/slice-board.py`.
+
+## Tool Routing
+
+Customize this table with the tools you use.
+
+| Signal | Tool or Skill | What it does |
+|--------|---------------|--------------|
+| Pressure-test a new feature idea | `{planning skill}` | Checks whether the work is worth doing. |
+| Tactical implementation decisions | `grill-me` | Asks one question at a time before the PRD. |
+| Build-ready PRD | `build-prd` | Writes `.context/builds/{feature}/prd.md`. |
+| Vertical slice board | `prd-to-slices` | Writes `.context/builds/{feature}/slices.md`. |
+| Code review before shipping | `{review skill}` | Reviews the diff for production bugs. |
+| Browser QA | `{qa skill}` | Tests the real app or preview. |
+| Ship workflow | `{ship skill}` | Prepares PR, checks, and release steps. |
+
+## Memory Architecture
+
+```text
+memory/MEMORY.md (master index, under 50 lines)
+  ├── skills/            <- personal skills vault
+  ├── decisions/         <- decisions with reasoning
+  ├── {project}/index.md <- project hub
+  └── journal/           <- session observations
+```
+
+Rules:
+
+- `MEMORY.md` stays under 50 lines.
+- Hubs stay under 60 lines. Use spokes for detail.
+- Read `memory/MEMORY.md` at session start for full context.
+
+## Communication Preferences
+
+Customize these.
+
+- Use first names when known. If unavailable, drop the greeting.
+- Use short sentences and common words in chat.
+- Lead with a recommendation. Say which option and why.
+- Do it yourself first. Ask only for credentials, accounts, or real decisions.
+- No em dashes in user-facing copy.
+- No dangling single-word lines in user-facing copy.
 
 ## Verify Before Declaring Done
 
-Don't say "done" based on code looking correct. Verify the actual output:
+Do not say "done" based on code looking correct.
 
-- **Database writes** → query and check the rows
-- **API calls** → check the response, not just that the call didn't error
-- **Deploys** → hit the endpoint and verify the behavior
-- **Visual / layout work** (HTML, slides, design) → screenshot the rendered output. Multi-slide decks: screenshot every slide. Never declare done from code alone.
-- **Source-of-truth claims** → check the deploy config (Vercel, git log, build scripts) before diffing two trees as if they're versions of the same file.
-- **Strategic shifts** → audit all existing content on the affected surface for consistency. A changed thesis must not leave stale claims behind.
+- Database writes: query and check rows.
+- API calls: check the response.
+- Deploys: hit the endpoint and verify.
+- Visual/layout work: screenshot and verify the rendered surface.
+- Source-of-truth claims: check the real source before comparing files.
 
-If you cannot verify (no browser, no deploy access, no DB access), say so explicitly instead of claiming success.
+If you cannot verify, say so.
 
----
+## Session Close
 
-## Friction Capture — The Compounding System
+1. Update `handoff.md`, under 20 lines.
+2. Update `active-backlog.md`, mark completed and add new items.
+3. If something reusable was learned, log it to `memory/`.
 
-Goal: turn in-the-moment frustrations into system improvements that make next week faster. Reviews don't work because friction is freshest when it happens. Capture at peak signal, process weekly.
+Every completed implementation ends with:
 
-### Trigger phrases — capture immediately
-
-When the user says any of these, **immediately** append an entry to `memory/pending-improvements.md`:
-- "log it" / "log that"
-- "that was dumb" / "that was annoying"
-- "don't do that again"
-- "capture this"
-- "friction"
-
-Don't ask the user to describe the friction. Extract it from recent conversation context yourself. Entry format:
-
-```
-### YYYY-MM-DD HH:MM — [one-line title]
-- **What happened:** [specific — what the AI did, what the user expected, what broke]
-- **Why it's friction:** bug | repetition | workflow | quality | speed
-- **Fix hypothesis:** [hook | feedback memory | CLAUDE.md edit | skill update | none]
-```
-
-After appending, confirm in one line: "Logged — [title]. Processed in next weekly review."
-
-### Weekly processing
-
-Run a weekly review on your cadence. The review **must produce at least one durable artifact** — a hook rule, feedback memory, CLAUDE.md edit, or skill update. No journaling allowed.
-
-**Preference order:** prevention (hook that blocks the bad behavior) > guidance (feedback memory the AI loads) > behavior (CLAUDE.md edit) > capability (new skill).
-
-The point: friction that gets captured but never converted is just complaining. Force conversion.
-
----
-
-## Coding Guidelines
-
-Behavioral guidelines to reduce common LLM coding mistakes. **Tradeoff:** these bias toward caution over speed. For trivial tasks, use judgment.
-
-### 1. Think Before Coding
-
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-### 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-### 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it — don't delete it.
-
-When your changes create orphans:
-- Remove imports / variables / functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: every changed line should trace directly to the user's request.
-
-### 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
----
-
-## Tool Routing — Use the Right Tool Automatically
-
-Map the work types you do most often to the tools / commands you use to do them. Your AI should detect the type of work and route to the right tool without being asked.
-
-| Signal | Tool / Command | What it does |
-|--------|----------------|--------------|
-| {e.g., Plan a new feature} | `{your planning command}` | {one-line note} |
-| {e.g., Code review before merging} | `{your review command}` | {one-line note} |
-| {e.g., QA test in a real browser} | `{your QA command}` | {one-line note} |
-| {e.g., Debug a recurring bug} | `{your debug command}` | {one-line note} |
-
-<!--
-Fill this with the tools you actually use. Group by domain (coding, writing,
-research) if you have many. Keep entries concrete: "plan a feature" beats
-"do planning." If you don't have specific commands yet, delete this section
-and add it back when you do.
--->
-
----
-
-## Domain Protocols (Customize These)
-
-Domain protocols are automatic behaviors that fire when specific work types are detected. They ensure your AI loads the right context before doing domain-specific work.
-
-### Example: {Domain} Protocol — Automatic for {Work Type}
-
-**Trigger:** Any time {description of when this should fire}.
-
-**Order of operations:**
-1. Read `memory/skills/{relevant-skill}.md` — {what this provides}
-2. Read `{other-reference-file}` — {what this provides}
-3. {Domain-specific validation step}
-
-**Do not skip steps 1-2.** {Why this context matters.}
-
-<!--
-Real examples of domain protocols:
-- Copywriting: Load brand guide + customer psychology before writing any copy
-- Code review: Load style guide + architecture decisions before reviewing PRs
-- Sales outreach: Load ICP profiles + objection patterns before drafting messages
-- Content creation: Load voice guide + past performance data before creating content
-- Architecture decisions: Load existing patterns + tech debt inventory before proposing changes
--->
-
----
-
-## The Learning System
-
-The most important system. Every session should leave you smarter.
-- Before building anything: search for existing patterns
-- After discovering something: write it immediately, don't wait until session end
-- When citing a past learning: reference when it was discovered and why it matters now
+- Files changed
+- Commands run
+- Test results
+- Screenshots or preview links if UI changed
+- Production touched: yes/no
+- Deploy touched: yes/no
+- Unrelated dirty files: yes/no
+- Known gaps
+- Outcome achieved: yes/no
+- Exact next safe action
+- Workflow assets used: [task lane], [QA checklist or N/A], [ship verification or skipped reason]

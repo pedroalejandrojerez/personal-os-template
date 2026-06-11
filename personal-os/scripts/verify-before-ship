@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Read-only pre-ship verification report for agents.
+
+set -uo pipefail
+
+failures=0
+
+section() { printf '\n== %s ==\n' "$1"; }
+pass() { printf 'PASS: %s\n' "$1"; }
+warn() { printf 'WARN: %s\n' "$1"; }
+skip() { printf 'SKIPPED: %s\n' "$1"; }
+fail() { printf 'FAIL: %s\n' "$1" >&2; failures=$((failures + 1)); }
+has() { command -v "$1" >/dev/null 2>&1; }
+
+run() {
+  local label="$1"
+  shift
+  printf '\nCHECK: %s\n' "$label"
+  if "$@"; then pass "$label"; else fail "$label"; fi
+}
+
+ref_exists() { git rev-parse --verify --quiet "$1" >/dev/null; }
+base_ref() {
+  if ref_exists origin/main; then printf 'origin/main\n'
+  elif ref_exists main; then printf 'main\n'
+  else printf '\n'
+  fi
+}
+
+matches_changed() {
+  local pattern="$1"
+  local found
+  found=$(printf '%s\n' "$changed_files" | grep -E "$pattern" || true)
+  [ -n "$found" ] && printf '%s\n' "$found"
+}
+
+section "Repo"
+branch=$(git branch --show-current 2>/dev/null || true)
+base=$(base_ref)
+printf 'Branch: %s\n' "${branch:-detached HEAD or unavailable}"
+printf 'Diff base: %s\n' "${base:-none}"
+[ -n "$base" ] || warn "No main or origin/main ref found"
+
+section "Git Status"
+status=$(git status --short)
+if [ -n "$status" ]; then printf '%s\n' "$status"; else pass "working tree is clean"; fi
+conflicts=$(git status --porcelain=v1 | awk 'substr($0,1,2) ~ /^(DD|AU|UD|UA|DU|AA|UU)$/ {c++} END {print c+0}')
+[ "$conflicts" -eq 0 ] && pass "no merge conflicts" || fail "$conflicts unresolved merge conflict(s)"
+
+section "Changed Files"
+changed_files=$(
+  {
+    [ -n "$base" ] && git diff --name-only "$base"...HEAD
+    git diff --name-only
+    git diff --cached --name-only
+    git ls-files --others --exclude-standard
+  } | sed '/^$/d' | sort -u
+)
+if [ -n "$changed_files" ]; then printf '%s\n' "$changed_files"; else pass "no changed files detected"; fi
+
+section "Unrelated Dirty Files"
+if [ -z "$status" ]; then
+  pass "none, working tree is clean"
+elif [ -z "${VERIFY_SHIP_EXPECTED_PATHS:-}" ]; then
+  skip "cannot safely classify dirty files without VERIFY_SHIP_EXPECTED_PATHS"
+else
+  unrelated=$(
+    git status --porcelain=v1 | sed -E 's/^.. //; s/^.* -> //' | while IFS= read -r file; do
+      allowed=false
+      expected=$(printf '%s' "$VERIFY_SHIP_EXPECTED_PATHS" | tr ',:' '\n')
+      while IFS= read -r prefix; do
+        [ -n "$prefix" ] || continue
+        if [ "$file" = "$prefix" ] || [[ "$file" == "$prefix"/* ]]; then
+          allowed=true
+        fi
+      done <<EOF
+$expected
+EOF
+      [ "$allowed" = true ] || printf '%s\n' "$file"
+    done
+  )
+  if [ -n "$unrelated" ]; then printf '%s\n' "$unrelated"; fail "dirty files outside expected paths"; else pass "dirty files match expected paths"; fi
+fi
+
+section "Risk Scan"
+if migrations=$(matches_changed '(^|/)(supabase/migrations|migrations)/|schema\.sql'); [ -n "$migrations" ]; then
+  printf '%s\n' "$migrations"; warn "migrations or schema changed"
+else pass "no migrations changed"; fi
+
+if sensitive=$(matches_changed 'stripe|payment|supabase|auth|billing|subscription|webhook|middleware|voice|audio|session|oauth'); [ -n "$sensitive" ]; then
+  printf '%s\n' "$sensitive"; warn "sensitive app files changed"
+else pass "no sensitive app files changed"; fi
+
+if deploy=$(matches_changed '(^|/)(vercel\.json|netlify\.toml|fly\.toml|render\.ya?ml|Dockerfile|docker-compose\.ya?ml|next\.config\.(js|mjs|ts)|middleware\.ts|package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|\.env.*)$|(^|/)\.github/workflows/'); [ -n "$deploy" ]; then
+  printf '%s\n' "$deploy"; warn "production or deploy config changed"
+else pass "no production or deploy config changed"; fi
+
+section "Checks"
+run "shell syntax: scripts/verify-before-ship" bash -n scripts/verify-before-ship
+
+if [ -f scripts/verify.sh ]; then run "existing repo verification" bash scripts/verify.sh
+else skip "scripts/verify.sh is not present"; fi
+
+section "Final Summary"
+printf 'Branch: %s\nBase: %s\n' "${branch:-unknown}" "${base:-none}"
+[ -n "$status" ] && printf 'Dirty working tree: yes\n' || printf 'Dirty working tree: no\n'
+if [ "$failures" -ne 0 ]; then
+  printf 'RESULT: FAIL, %s check(s) failed\n' "$failures" >&2
+  exit 1
+fi
+printf 'RESULT: PASS\n'

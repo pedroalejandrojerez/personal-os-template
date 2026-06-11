@@ -1,11 +1,12 @@
 # Active Backlog — {YOUR_NAME}
 
 ## In Progress
-- [ ] {Your first task — what are you working on right now?}
+- [ ] Customize this personal OS for {YOUR_NAME}
 
 ## Up Next
-- [ ] {Next priority item}
-- [ ] {Another item}
+- [ ] Fill in `CLAUDE.md`, `AGENTS.md`, and `memory/MEMORY.md`
+- [ ] Decide which workflow hooks to keep in `.claude/settings.json`
+- [ ] Run `scripts/verify-before-ship` once after setup
 
 ## Parked
 - (items that aren't active but you don't want to forget)
