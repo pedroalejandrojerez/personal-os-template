@@ -40,9 +40,11 @@ Do not ask execution agents to rediscover the whole product. Give them the Build
 
 Bundled in this template:
 
+- `ce`
 - `grill-me`
 - `build-prd`
 - `prd-to-slices`
+- `review-week`
 
 Synced when G-Stack is installed locally:
 
@@ -69,6 +71,8 @@ Run:
 ```
 
 If G-Stack is not installed, the bridge skills still work. Install or sync G-Stack later.
+
+See `docs/setup/workflow-skills.md` for the intentionally small workflow skill list. Private marketing, company, finance, and customer-specific skills are not included in this public template.
 
 ## Conductor Setup
 

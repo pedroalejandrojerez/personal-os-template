@@ -151,14 +151,15 @@ Constraint: Keep the patch small and reuse existing code where possible.
 
 Use this path for larger builds:
 
-1. Run `/gstack-office-hours` to pressure-test the idea.
-2. Run `/gstack-plan-ceo-review`, `/gstack-plan-design-review`, `/gstack-plan-eng-review`, and `/gstack-plan-devex-review` as needed.
-3. Run `/grill-me` to force tactical decisions, one question at a time.
-4. Run `/build-prd` to write `.context/builds/{feature}/prd.md`.
-5. Run `/prd-to-slices` to write `.context/builds/{feature}/slices.md`.
-6. Run the first slice human-in-the-loop.
-7. Open one Conductor workspace per independent AFK slice only after the first slice proves the format.
-8. Review, QA, ship, and update the board with `scripts/slice-board.py`.
+1. Use `/ce` when the user wants the full build workflow.
+2. Run `/gstack-office-hours` to pressure-test the idea.
+3. Run `/gstack-plan-ceo-review`, `/gstack-plan-design-review`, `/gstack-plan-eng-review`, and `/gstack-plan-devex-review` as needed.
+4. Run `/grill-me` to force tactical decisions, one question at a time.
+5. Run `/build-prd` to write `.context/builds/{feature}/prd.md`.
+6. Run `/prd-to-slices` to write `.context/builds/{feature}/slices.md`.
+7. Run the first slice human-in-the-loop.
+8. Open one Conductor workspace per independent AFK slice only after the first slice proves the format.
+9. Review, QA, ship, and update the board with `scripts/slice-board.py`.
 
 ## Tool Routing
 
@@ -166,6 +167,7 @@ G-Stack is the default workflow driver. Customize this table with your exact ins
 
 | Signal | Tool or Skill | What it does |
 |--------|---------------|--------------|
+| Full build workflow | `ce` | Routes idea, plan, work, review, and learning. |
 | Pressure-test a new feature idea | `gstack-office-hours` | Checks whether the work is worth doing. |
 | Strategic challenge to a plan | `gstack-plan-ceo-review` | Tests scope and product strategy. |
 | Design review of a plan | `gstack-plan-design-review` | Checks user experience and taste. |
@@ -181,6 +183,7 @@ G-Stack is the default workflow driver. Customize this table with your exact ins
 | Merge, deploy, verify | `gstack-land-and-deploy` | Lands and verifies a release when approved. |
 | Post-deploy monitoring | `gstack-canary` | Watches production after shipping. |
 | Weekly retro | `gstack-retro` | Finds workflow lessons and durable improvements. |
+| Weekly workflow audit | `review-week` | Checks adoption of lanes, source-of-truth, QA, pre-ship checks, receipts, and approvals. |
 
 ## Memory Architecture
 

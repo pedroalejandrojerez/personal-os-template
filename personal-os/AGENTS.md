@@ -19,10 +19,11 @@ If a Build PRD or slice board exists, implement from it. Do not reopen product s
 
 Use G-Stack workflow assets when available:
 
+- Full workflow wrapper: `ce`
 - Planning and challenge: `gstack-office-hours`, `gstack-plan-ceo-review`, `gstack-plan-design-review`, `gstack-plan-eng-review`
 - Bridge to execution: `grill-me`, `build-prd`, `prd-to-slices`
 - Review and QA: `gstack-review`, `gstack-qa <url>`, `gstack-cso`
-- Ship and learn: `gstack-ship`, `gstack-land-and-deploy`, `gstack-canary`, `gstack-retro`
+- Ship and learn: `gstack-ship`, `gstack-land-and-deploy`, `gstack-canary`, `gstack-retro`, `review-week`
 
 ## Conductor Status
 
@@ -96,14 +97,15 @@ Constraint: Keep the patch small and reuse existing code where possible.
 For larger builds:
 
 1. Claude plans with the most capable model.
-2. G-Stack pressure-tests and reviews the plan.
-3. `/grill-me`
-4. `/build-prd`
-5. `/prd-to-slices`
-6. First slice human-in-the-loop
-7. Composer or Codex executes approved slices.
-8. One Conductor workspace per independent AFK slice
-9. Board updates through `scripts/slice-board.py`
+2. `/ce` routes the work when the user wants the full build workflow.
+3. G-Stack pressure-tests and reviews the plan.
+4. `/grill-me`
+5. `/build-prd`
+6. `/prd-to-slices`
+7. First slice human-in-the-loop
+8. Composer or Codex executes approved slices.
+9. One Conductor workspace per independent AFK slice
+10. Board updates through `scripts/slice-board.py`
 
 ## Session Close
 

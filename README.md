@@ -14,6 +14,7 @@ This is a two-layer operating system that wraps around Claude Code, Codex, Curso
 - **Task lanes and QA checklists** before risky edits
 - **Workflow gates** for source-of-truth UI work, pre-ship checks, and production approval phrases
 - **Build bridge skills** for `/grill-me`, `/build-prd`, and `/prd-to-slices`
+- **Workflow commands** for `/ce`, `/grill-me`, `/build-prd`, `/prd-to-slices`, and `/review-week`
 - **Team knowledge sharing** when you also use a shared team OS
 
 ## The Two-Layer Architecture
@@ -132,9 +133,11 @@ If the answer is no, something should have been captured.
 | `.conductor/settings.toml` | Conductor workspace setup |
 | `.claude/settings.json` | Claude Code hooks for workflow gates |
 | `.claude/hooks/` | Guard, format, review, QA, and source-of-truth hooks |
+| `.claude/commands/` | Workflow slash-command wrappers |
 | `.github/` | Pull request template and verification workflow |
 | `docs/agent-task-templates.md` | Lanes agents fill before non-trivial work |
 | `docs/setup/agent-stack.md` | Full Claude, Composer, Codex, G-Stack, and Conductor setup guide |
+| `docs/setup/workflow-skills.md` | Workflow-integrated skills only |
 | `docs/qa/` | QA checklists for UI, billing, DB, auth, onboarding, and voice |
 | `scripts/detect-change-risk` | Changed-file risk classifier |
 | `scripts/verify-before-ship` | Read-only pre-ship report |
@@ -238,6 +241,7 @@ scripts/slice-board.py --help
 For larger builds:
 
 ```text
+/ce
 /gstack-office-hours
 /gstack-plan-ceo-review
 /gstack-plan-design-review
@@ -249,6 +253,8 @@ For larger builds:
 /gstack-qa <url>
 /gstack-ship
 ```
+
+The template intentionally does not include private marketing, company, finance, or customer-specific skills. Add those later in your private memory if you use them.
 
 ## Tips
 
