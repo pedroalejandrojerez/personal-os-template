@@ -4,10 +4,11 @@ A system for making every AI session smarter than the last. Fork this, fill in t
 
 ## What This Is
 
-This is a two-layer operating system that wraps around Claude Code or Cursor. It gives your AI:
+This is a two-layer operating system that wraps around Claude Code, Codex, Cursor Composer, and Conductor. It gives your AI:
 
 - **Persistent memory** across sessions through a hub and spoke architecture
 - **Session continuity** through handoff files and an active backlog
+- **A clear agent stack** with Claude as planning, Composer/Codex as execution, and G-Stack as workflow
 - **Agent parity** with both `CLAUDE.md` and `AGENTS.md`
 - **Conductor workspace states** for planning, in progress, review, merged, and done
 - **Task lanes and QA checklists** before risky edits
@@ -26,6 +27,7 @@ This system uses two repos that work together:
   handoff.md             # Your session continuity
   active-backlog.md      # Your task tracking
   AGENTS.md              # Codex / non-Claude instructions
+  .cursor/rules/         # Cursor Composer execution rules
   docs/                  # task lanes and QA checklists
   scripts/               # verification, risk detection, slice board helpers
 
@@ -81,9 +83,20 @@ Then customize:
 
 ### Step 3: Open in Cursor / Claude Code
 
-Claude Code and Cursor read `CLAUDE.md`. Codex reads `AGENTS.md`. Conductor can use `.conductor/settings.toml` to sync bridge skills into `.agents/skills/`.
+Claude Code reads `CLAUDE.md`. Codex reads `AGENTS.md`. Cursor Composer reads `.cursor/rules/`. Conductor can use `.conductor/settings.toml` to sync bridge skills into `.agents/skills/`.
 
 Open your personal OS folder as the workspace. The system boots up from `handoff.md`, `active-backlog.md`, and `memory/MEMORY.md`.
+
+### Recommended Agent Stack
+
+| Layer | Default tool | Model posture | Job |
+|-------|--------------|---------------|-----|
+| Planning | Claude | Most capable model available | Think, challenge, ask questions, make plans, write PRDs, review architecture. |
+| Execution | Composer or Codex | Strong coding model | Implement from the plan, keep patches small, run checks, update files. |
+| Workflow | G-Stack | Skill package | Office hours, plan reviews, design review, QA, security review, ship, retro. |
+| Parallel work | Conductor | Workspace manager | Run separate agents in separate workspaces with clear states. |
+
+Default rule: Claude owns product thinking and plans. Composer/Codex own code execution after the plan is clear.
 
 ### Optional: Conductor setup
 
@@ -96,6 +109,8 @@ cd ~/my-os
 ```
 
 The template uses `.context/` for in-flight agent coordination and keeps `.agents/` generated locally.
+
+Read the full setup guide at `personal-os/docs/setup/agent-stack.md`.
 
 ## Philosophy
 
@@ -113,11 +128,13 @@ If the answer is no, something should have been captured.
 |------|---------|
 | `CLAUDE.md` | AI system instructions — the core brain |
 | `AGENTS.md` | Non-Claude agent instructions for Codex and similar tools |
+| `.cursor/rules/` | Cursor Composer rules for execution agents |
 | `.conductor/settings.toml` | Conductor workspace setup |
 | `.claude/settings.json` | Claude Code hooks for workflow gates |
 | `.claude/hooks/` | Guard, format, review, QA, and source-of-truth hooks |
 | `.github/` | Pull request template and verification workflow |
 | `docs/agent-task-templates.md` | Lanes agents fill before non-trivial work |
+| `docs/setup/agent-stack.md` | Full Claude, Composer, Codex, G-Stack, and Conductor setup guide |
 | `docs/qa/` | QA checklists for UI, billing, DB, auth, onboarding, and voice |
 | `scripts/detect-change-risk` | Changed-file risk classifier |
 | `scripts/verify-before-ship` | Read-only pre-ship report |
@@ -202,6 +219,7 @@ The personal `CLAUDE.md` ships with a few opinionated behaviors. Customize or de
 | **Workflow Approval Rules** | Production DB and deploy actions require exact phrases |
 | **Task Lanes** | Agents fill the right lane before non-trivial edits |
 | **Build Bridge** | `/grill-me` → `/build-prd` → `/prd-to-slices` turns plans into slices |
+| **Agent Stack** | Claude plans with the most capable model. Composer/Codex execute. G-Stack provides the workflow. |
 
 ## Solo Use (No Team)
 
@@ -220,9 +238,16 @@ scripts/slice-board.py --help
 For larger builds:
 
 ```text
+/gstack-office-hours
+/gstack-plan-ceo-review
+/gstack-plan-design-review
+/gstack-plan-eng-review
 /grill-me
 /build-prd
 /prd-to-slices
+/gstack-review
+/gstack-qa <url>
+/gstack-ship
 ```
 
 ## Tips

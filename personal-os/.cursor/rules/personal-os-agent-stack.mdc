@@ -1,0 +1,31 @@
+---
+description: Personal OS agent stack and execution rules
+alwaysApply: true
+---
+
+# Personal OS Agent Stack
+
+Claude is the planning layer. Cursor Composer and Codex are execution layers.
+
+## Before Work
+
+- Read `AGENTS.md`.
+- Read `handoff.md`, `active-backlog.md`, and `memory/MEMORY.md`.
+- If `.context/builds/{feature}/prd.md` or `slices.md` exists, implement from it.
+- Do not reopen product strategy unless the plan is unsafe, contradictory, or impossible.
+
+## Execution Rules
+
+- Keep patches small.
+- Reuse existing code first.
+- Fill the matching lane in `docs/agent-task-templates.md` before non-trivial edits.
+- Use `docs/qa/*` when the change touches a matching product surface.
+- Run `scripts/detect-change-risk` after edits.
+- Run `scripts/verify-before-ship` before commit, push, PR, merge, or deploy.
+- Update slice boards through `scripts/slice-board.py`.
+
+## Approval Rules
+
+- Production deploy requires the exact phrase `approved to deploy production`.
+- Production DB mutation requires the exact phrase `approved for production DB mutation`.
+- Short approvals apply only to the last explicitly named action.

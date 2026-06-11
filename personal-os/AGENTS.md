@@ -11,6 +11,19 @@ This file is the source of truth for non-Claude agents such as Codex. Keep it al
 
 Default action is always: close an open loop.
 
+## Execution Agent Role
+
+Claude is the planning layer. Composer and Codex are execution layers.
+
+If a Build PRD or slice board exists, implement from it. Do not reopen product strategy unless the plan is unsafe, contradictory, or impossible. Keep patches small, run the required checks, and update the slice board with `scripts/slice-board.py` when working from a slice.
+
+Use G-Stack workflow assets when available:
+
+- Planning and challenge: `gstack-office-hours`, `gstack-plan-ceo-review`, `gstack-plan-design-review`, `gstack-plan-eng-review`
+- Bridge to execution: `grill-me`, `build-prd`, `prd-to-slices`
+- Review and QA: `gstack-review`, `gstack-qa <url>`, `gstack-cso`
+- Ship and learn: `gstack-ship`, `gstack-land-and-deploy`, `gstack-canary`, `gstack-retro`
+
 ## Conductor Status
 
 At the start of any Conductor status update, report:
@@ -82,12 +95,15 @@ Constraint: Keep the patch small and reuse existing code where possible.
 
 For larger builds:
 
-1. `/grill-me`
-2. `/build-prd`
-3. `/prd-to-slices`
-4. First slice human-in-the-loop
-5. One Conductor workspace per independent AFK slice
-6. Board updates through `scripts/slice-board.py`
+1. Claude plans with the most capable model.
+2. G-Stack pressure-tests and reviews the plan.
+3. `/grill-me`
+4. `/build-prd`
+5. `/prd-to-slices`
+6. First slice human-in-the-loop
+7. Composer or Codex executes approved slices.
+8. One Conductor workspace per independent AFK slice
+9. Board updates through `scripts/slice-board.py`
 
 ## Session Close
 

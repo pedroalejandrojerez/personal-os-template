@@ -41,6 +41,19 @@ If yes, ship it first. New work starts only when nothing is at 80% or more.
 
 If the user explicitly wants to start something new, that is fine. Name what is being deprioritized.
 
+## Default Agent Stack
+
+Use the stack this way unless the user says otherwise:
+
+| Layer | Tool | Model posture | Job |
+|-------|------|---------------|-----|
+| Planning | Claude | Most capable model available | Clarify, challenge, decide, write plans, review architecture, and protect taste. |
+| Execution | Composer or Codex | Strong coding model | Implement the approved plan, keep patches small, run checks, and report receipts. |
+| Workflow | G-Stack | Skill package | Office hours, plan reviews, design review, QA, security review, ship, and retro. |
+| Parallel work | Conductor | Workspace manager | Run separate workspaces with clear state, owner, next action, and risk. |
+
+Claude is the planning and review layer. Do not rush into implementation from Claude unless the task is tiny. For real builds, create the plan, PRD, and slice board first, then let Composer or Codex execute from those files.
+
 ## Conductor Workspace States
 
 Every Conductor workspace must have one visible state:
@@ -138,8 +151,8 @@ Constraint: Keep the patch small and reuse existing code where possible.
 
 Use this path for larger builds:
 
-1. Pressure-test the idea.
-2. Review strategy, design, engineering, and developer experience as needed.
+1. Run `/gstack-office-hours` to pressure-test the idea.
+2. Run `/gstack-plan-ceo-review`, `/gstack-plan-design-review`, `/gstack-plan-eng-review`, and `/gstack-plan-devex-review` as needed.
 3. Run `/grill-me` to force tactical decisions, one question at a time.
 4. Run `/build-prd` to write `.context/builds/{feature}/prd.md`.
 5. Run `/prd-to-slices` to write `.context/builds/{feature}/slices.md`.
@@ -149,17 +162,25 @@ Use this path for larger builds:
 
 ## Tool Routing
 
-Customize this table with the tools you use.
+G-Stack is the default workflow driver. Customize this table with your exact installed commands.
 
 | Signal | Tool or Skill | What it does |
 |--------|---------------|--------------|
-| Pressure-test a new feature idea | `{planning skill}` | Checks whether the work is worth doing. |
+| Pressure-test a new feature idea | `gstack-office-hours` | Checks whether the work is worth doing. |
+| Strategic challenge to a plan | `gstack-plan-ceo-review` | Tests scope and product strategy. |
+| Design review of a plan | `gstack-plan-design-review` | Checks user experience and taste. |
+| Engineering review of a plan | `gstack-plan-eng-review` | Locks architecture, edge cases, and tests. |
+| Developer experience review | `gstack-plan-devex-review` | Checks CLI, API, SDK, and local workflow impact. |
 | Tactical implementation decisions | `grill-me` | Asks one question at a time before the PRD. |
 | Build-ready PRD | `build-prd` | Writes `.context/builds/{feature}/prd.md`. |
 | Vertical slice board | `prd-to-slices` | Writes `.context/builds/{feature}/slices.md`. |
-| Code review before shipping | `{review skill}` | Reviews the diff for production bugs. |
-| Browser QA | `{qa skill}` | Tests the real app or preview. |
-| Ship workflow | `{ship skill}` | Prepares PR, checks, and release steps. |
+| Code review before shipping | `gstack-review` | Reviews the diff for production bugs. |
+| Browser QA | `gstack-qa <url>` | Tests the real app or preview. |
+| Security review | `gstack-cso` | Reviews security risks before public launches. |
+| Ship workflow | `gstack-ship` | Prepares PR, checks, and release steps. |
+| Merge, deploy, verify | `gstack-land-and-deploy` | Lands and verifies a release when approved. |
+| Post-deploy monitoring | `gstack-canary` | Watches production after shipping. |
+| Weekly retro | `gstack-retro` | Finds workflow lessons and durable improvements. |
 
 ## Memory Architecture
 
